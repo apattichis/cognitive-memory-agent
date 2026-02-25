@@ -52,7 +52,7 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
 
 def cluster_episodes(episodes: list[dict], threshold: float) -> list[list[dict]]:
     """Group episodes by embedding similarity using simple greedy clustering."""
-    if not episodes or not episodes[0].get("embedding"):
+    if not episodes or episodes[0].get("embedding") is None:
         return [[ep] for ep in episodes]
 
     used = set()
