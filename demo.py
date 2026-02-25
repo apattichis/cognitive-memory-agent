@@ -7,7 +7,7 @@ def main():
     agent = CognitiveAgent()
 
     print("Cognitive Memory Agent")
-    print("Commands: /new (new conversation), /ingest (reload docs), /quit (exit)")
+    print("Commands: /new (new conversation), /ingest (reload docs), /sleep (consolidate), /quit (exit)")
     print("-" * 40)
 
     while True:
@@ -32,6 +32,12 @@ def main():
         if user_input.lower() == "/ingest":
             agent.semantic.ingest_all()
             print("\n--- Documents reloaded ---")
+            continue
+
+        if user_input.lower() == "/sleep":
+            print("\n--- Running memory consolidation ---")
+            agent.consolidation.run()
+            print("--- Consolidation complete ---")
             continue
 
         response = agent.chat(user_input)

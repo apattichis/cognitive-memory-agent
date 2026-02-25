@@ -1,9 +1,11 @@
 """Main agent that orchestrates all memory systems."""
 
+import config
 from memory.working import WorkingMemory
 from memory.semantic import SemanticMemory
 from memory.episodic import EpisodicMemory
 from memory.procedural import ProceduralMemory
+from memory.consolidation import Consolidation
 
 
 class CognitiveAgent:
@@ -14,6 +16,7 @@ class CognitiveAgent:
         self.semantic = SemanticMemory()
         self.episodic = EpisodicMemory()
         self.procedural = ProceduralMemory()
+        self.consolidation = Consolidation(self.episodic, self.procedural)
         self.conversation_count = 0
 
         # Ingest any documents in data/
@@ -76,6 +79,11 @@ class CognitiveAgent:
                 print("  Updating procedural memory...")
                 self.procedural.update(episodic_context)
 
-        # Future: trigger consolidation every N conversations
         self.conversation_count += 1
+
+        # Trigger consolidation every N conversations
+        if self.conversation_count % config.CONSOLIDATION_EVERY_N == 0:
+            print("  Running memory consolidation (sleep phase)...")
+            self.consolidation.run()
+
         self.working.reset()
