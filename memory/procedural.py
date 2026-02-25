@@ -6,24 +6,25 @@ from anthropic import Anthropic
 import config
 
 
-UPDATE_PROMPT = """You maintain a set of behavioral guidelines for an AI assistant.
-You are given the current rules and new learnings from recent conversations.
+UPDATE_PROMPT = """You are a rule maintenance system. You incrementally update behavioral guidelines based on new evidence.
 
-Current rules:
+<current_rules>
 {current_rules}
+</current_rules>
 
-New learnings from recent conversations:
+<new_evidence>
 {new_learnings}
+</new_evidence>
 
-Update the rules by:
-1. Keep rules that are still valid
-2. Merge new learnings into existing rules where they overlap
-3. Add genuinely new rules from the learnings
-4. Remove rules that are contradicted by new evidence
-5. Cap at {max_rules} rules total, prioritize by importance
+Instructions:
+1. Preserve rules that remain valid and are not contradicted
+2. If new evidence overlaps with an existing rule, merge them into one stronger rule
+3. Add new rules only when the evidence clearly supports a generalizable behavior
+4. Remove rules that are directly contradicted by new evidence
+5. Each rule should be actionable and specific, not vague
+6. Maximum {max_rules} rules, ranked by importance
 
-Return ONLY a JSON array of strings, each being one rule. Example:
-["Rule 1 text", "Rule 2 text", "Rule 3 text"]"""
+Return ONLY a JSON array of rule strings. No explanation, no markdown."""
 
 
 class ProceduralMemory:

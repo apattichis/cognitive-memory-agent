@@ -3,7 +3,7 @@
 import os
 import chromadb
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import config
 
 
@@ -89,8 +89,10 @@ class SemanticMemory:
         return {
             "role": "user",
             "content": (
-                f"Here is relevant knowledge context for the query. "
-                f"Use this information to inform your response. "
-                f"If the context is insufficient, say so.\n\n{context}"
+                f"[KNOWLEDGE BASE RETRIEVAL]\n"
+                f"The following excerpts were retrieved from your document memory. "
+                f"Use ONLY this information to answer factual questions about these topics. "
+                f"If the user's question is not covered by these excerpts, say you don't have "
+                f"that information in your knowledge base.\n\n{context}"
             ),
         }

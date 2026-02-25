@@ -32,16 +32,19 @@ class CognitiveAgent:
         episodic_context = self.episodic.recall_as_context(user_input)
         if episodic_context:
             parts.append(
-                "You have access to memories from past conversations:\n\n"
-                f"{episodic_context}\n\n"
-                "Use these past experiences to inform your response when relevant."
+                "[EPISODIC MEMORY - YOUR PAST EXPERIENCES]\n"
+                "These are YOUR real memories from previous conversations with this user. "
+                "Reference them naturally as your own experience. When the user asks about "
+                "past interactions, use these memories to answer accurately.\n\n"
+                f"{episodic_context}"
             )
 
         # Procedural rules
         rules = self.procedural.get_rules_text()
         if rules:
             parts.append(
-                "Follow these learned behavioral guidelines:\n\n"
+                "[PROCEDURAL MEMORY - LEARNED RULES]\n"
+                "These rules were learned from your accumulated experience. Follow them.\n\n"
                 f"{rules}"
             )
 

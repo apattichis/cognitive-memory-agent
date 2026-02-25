@@ -8,30 +8,38 @@ from memory.episodic import EpisodicMemory
 from memory.procedural import ProceduralMemory
 
 
-MERGE_PROMPT = """These conversations cover overlapping topics. Synthesize them into
-ONE unified episodic memory that preserves all unique learnings but removes redundancy.
+MERGE_PROMPT = """You are a memory consolidation system. Multiple episodic memories cover overlapping topics. Merge them into ONE unified memory that preserves all unique information.
 
-Conversations to merge:
+<episodes>
 {episodes}
+</episodes>
 
-Return ONLY valid JSON:
-{{
-    "summary": "One sentence summary of the merged experience",
-    "what_worked": "Combined effective approaches",
-    "what_to_avoid": "Combined pitfalls",
-    "context_tags": ["2-4 keywords covering all merged topics"]
-}}"""
+Rules:
+- Preserve every distinct fact, lesson, or insight from the originals
+- Remove only exact duplicates, not similar-but-different points
+- The merged summary should cover the full scope of all episodes
+- Combine "what worked" and "what to avoid" lists additively
+
+Return ONLY valid JSON with these fields (no markdown, no code fences):
+- "summary": one sentence covering the merged topic
+- "what_worked": combined effective approaches from all episodes
+- "what_to_avoid": combined pitfalls from all episodes
+- "context_tags": 2-4 keywords covering all merged topics"""
 
 
-PROMOTION_PROMPT = """Analyze these episodic memories for recurring patterns that should
-become permanent behavioral rules.
+PROMOTION_PROMPT = """You are a pattern extraction system. Analyze these episodic memories and identify recurring behavioral patterns that should become permanent rules.
 
-Memories:
+<memories>
 {episodes}
+</memories>
 
-Extract patterns that appear in 2+ memories. Return ONLY a JSON array of rule strings.
-If no strong patterns exist, return an empty array [].
-Only extract rules that are clearly supported by multiple experiences."""
+Criteria for promotion:
+- A pattern must appear in at least 2 separate memories to qualify
+- Rules must be specific and actionable, not vague generalizations
+- Only extract patterns clearly supported by evidence in the memories
+
+Return ONLY a JSON array of rule strings. If no patterns meet the criteria, return [].
+No explanation, no markdown."""
 
 
 def cosine_similarity(a: list[float], b: list[float]) -> float:

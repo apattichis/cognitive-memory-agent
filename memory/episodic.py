@@ -8,18 +8,17 @@ from anthropic import Anthropic
 import config
 
 
-REFLECTION_PROMPT = """Analyze this conversation and extract structured reflections.
-Return ONLY valid JSON with these fields:
+REFLECTION_PROMPT_TEMPLATE = """You are a memory encoder. Your task is to extract a structured reflection from a conversation so it can be stored and retrieved later.
 
-{
-    "context_tags": ["2-4 short keywords describing the topic"],
-    "summary": "One sentence summary of what was discussed",
-    "what_worked": "What approaches or responses were effective (or N/A)",
-    "what_to_avoid": "What pitfalls or mistakes were identified (or N/A)"
-}
+<conversation>
+{conversation}
+</conversation>
 
-Conversation:
-{conversation}"""
+Extract the following fields and return ONLY valid JSON (no markdown, no code fences):
+- "context_tags": 2-4 specific keywords for retrieval (e.g. "QA-7", "processor", "Zeltron" not generic words like "technology")
+- "summary": one factual sentence capturing the key topic and outcome
+- "what_worked": specific approaches that were effective, or "N/A" if none
+- "what_to_avoid": specific mistakes or pitfalls identified, or "N/A" if none"""
 
 
 class EpisodicMemory:
@@ -122,7 +121,7 @@ class EpisodicMemory:
                 "id": results["ids"][i],
                 "document": doc,
                 "metadata": results["metadatas"][i],
-                "embedding": results["embeddings"][i] if results["embeddings"] else None,
+                "embedding": results["embeddings"][i] if results["embeddings"] is not None else None,
             })
         return episodes
 
@@ -140,7 +139,7 @@ class EpisodicMemory:
                 temperature=0.3,
                 messages=[{
                     "role": "user",
-                    "content": REFLECTION_PROMPT.format(conversation=conversation_text),
+                    "content": REFLECTION_PROMPT_TEMPLATE.format(conversation=conversation_text),
                 }],
             )
             text = response.content[0].text
