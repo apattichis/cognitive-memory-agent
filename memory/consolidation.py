@@ -147,12 +147,23 @@ class Consolidation:
         ids_to_delete = [ep["id"] for ep in cluster]
         self.episodic.delete(ids_to_delete)
 
-        # Store merged episode
+        # Store merged episode - ensure all metadata values are strings
         import time
+
+        def to_str(val):
+            if isinstance(val, list):
+                return ", ".join(str(v) for v in val) if val else "N/A"
+            return str(val) if val else "N/A"
+
+        summary = to_str(merged.get("summary"))
+        what_worked = to_str(merged.get("what_worked"))
+        what_to_avoid = to_str(merged.get("what_to_avoid"))
+        context_tags = ",".join(merged.get("context_tags", [])) or "general"
+
         merged_doc = (
-            f"Summary: {merged['summary']}\n"
-            f"What worked: {merged['what_worked']}\n"
-            f"What to avoid: {merged['what_to_avoid']}\n\n"
+            f"Summary: {summary}\n"
+            f"What worked: {what_worked}\n"
+            f"What to avoid: {what_to_avoid}\n\n"
             f"[Consolidated from {len(cluster)} episodes]"
         )
         self.episodic.collection.add(
@@ -160,10 +171,10 @@ class Consolidation:
             documents=[merged_doc],
             metadatas=[{
                 "timestamp": time.time(),
-                "summary": merged["summary"],
-                "what_worked": merged["what_worked"],
-                "what_to_avoid": merged["what_to_avoid"],
-                "context_tags": ",".join(merged.get("context_tags", [])),
+                "summary": summary,
+                "what_worked": what_worked,
+                "what_to_avoid": what_to_avoid,
+                "context_tags": context_tags,
                 "consolidated": "true",
             }],
         )

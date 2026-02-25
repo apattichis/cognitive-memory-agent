@@ -19,7 +19,7 @@ EPISODIC_TOP_K = 3
 RECENCY_HALF_LIFE_HOURS = 72
 
 # Consolidation
-CONSOLIDATION_THRESHOLD = 0.85  # similarity threshold for merging
+CONSOLIDATION_THRESHOLD = 0.70  # similarity threshold for merging
 CONSOLIDATION_EVERY_N = 5       # consolidate every N conversations
 PROMOTION_MIN_OCCURRENCES = 3   # promote pattern after N appearances
 
