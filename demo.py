@@ -7,7 +7,7 @@ def main():
     agent = CognitiveAgent()
 
     print("Cognitive Memory Agent")
-    print("Commands: /new (new conversation), /quit (exit)")
+    print("Commands: /new (new conversation), /ingest (reload docs), /quit (exit)")
     print("-" * 40)
 
     while True:
@@ -25,6 +25,11 @@ def main():
         if user_input.lower() == "/new":
             agent.new_conversation()
             print("\n--- New conversation started ---")
+            continue
+
+        if user_input.lower() == "/ingest":
+            agent.semantic.ingest_all()
+            print("\n--- Documents reloaded ---")
             continue
 
         response = agent.chat(user_input)
