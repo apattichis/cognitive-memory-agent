@@ -20,6 +20,8 @@ def main():
             continue
 
         if user_input.lower() == "/quit":
+            # Save current conversation before exiting
+            agent.new_conversation()
             break
 
         if user_input.lower() == "/new":
