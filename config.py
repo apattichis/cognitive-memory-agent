@@ -26,3 +26,6 @@ PROMOTION_MIN_OCCURRENCES = 3   # promote pattern after N appearances
 # Procedural memory
 PROCEDURAL_MEMORY_FILE = "./procedural_memory.txt"
 MAX_PROCEDURAL_RULES = 15
+
+# Conflict detection
+CONFLICT_DETECTION_ENABLED = True
