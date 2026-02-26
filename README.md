@@ -162,7 +162,8 @@ data/                     # PDF documents for semantic memory ingestion
 - Episodic recall can miss details if the LLM reflection doesn't prominently feature them in the summary
 
 **Next steps:**
-- [ ] Markdown-first storage - episodes as .md files with YAML frontmatter, ChromaDB as a rebuildable search index
-- [ ] Procedural rules as tool-compatible markdown (CLAUDE.md / .clinerules / .cursorrules format)
-- [ ] Adapter layer - sync memory state to Claude Code, Cline, Cursor, and other tool formats
-- [ ] MCP server - expose memory operations (store, recall, consolidate, rules) as tools for direct integration
+- [ ] **Markdown-first storage** - Episodes as `.md` files with YAML frontmatter, procedural rules as `memory/rules.md`. ChromaDB becomes a rebuildable search index, not the source of truth.
+- [ ] **Hybrid search** - BM25 keyword search + vector cosine similarity combined via Reciprocal Rank Fusion. Fixes episodic recall misses on keyword-heavy queries.
+- [ ] **MCP server** - Expose memory operations (store, recall, consolidate, rules, ingest, stats) as tools via FastMCP. Supports stdio and streamable-http transport.
+- [ ] **Tool-compatible rule export** - Auto-sync procedural rules to `.claude/rules/`, `.clinerules/`, `.cursor/rules/` formats so AI coding tools pick them up natively.
+- [ ] **Claude Code plugin** - Skills (`/remember`, `/recall`, `/consolidate`), hooks (session start/end memory injection), and MCP auto-discovery for full integration.
