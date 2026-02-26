@@ -1,6 +1,8 @@
 # Cognitive Memory Agent
 
-A cognitive architecture for LLM-based chatbots that goes beyond vanilla RAG. Built on Anthropic's Claude, the agent maintains five distinct memory systems - working, semantic, episodic, procedural, and consolidation - that mirror how human cognition stores, retrieves, and refines knowledge over time. Documents are ingested into a ChromaDB vector store for semantic retrieval, conversations are reflected on and stored as episodic memories with recency-weighted recall, and a periodic "sleep" phase clusters similar episodes, compresses them, and promotes recurring patterns into persistent behavioral rules.
+A cognitive architecture for LLM-based chatbots that goes beyond vanilla RAG. Built on Anthropic's Claude, the agent maintains five distinct memory systems - working, semantic, episodic, procedural, and consolidation - that mirror how human cognition stores, retrieves, and refines knowledge over time. The result is an agent that remembers past conversations, learns from experience, and produces personalized responses tailored to each user's context, preferences, and history.
+
+Documents are ingested into a ChromaDB vector store for semantic retrieval, conversations are reflected on and stored as episodic memories with recency-weighted recall, and a periodic "sleep" phase clusters similar episodes, compresses them, and promotes recurring patterns into persistent behavioral rules.
 
 ## Memory Systems
 
@@ -94,3 +96,25 @@ Every N conversations (configurable), the agent runs a "sleep" cycle:
 3. **Promote** - Extracts recurring patterns across episodes and adds them as procedural rules
 
 This prevents unbounded memory growth and improves retrieval quality over time.
+
+## Limitations & Next Steps
+
+**What the benchmark shows:**
+- Semantic retrieval (RAG) works equally well for both agents on factual questions
+- Episodic memory provides a clear advantage for cross-conversation recall
+- Consolidation successfully compresses overlapping memories
+- Post-consolidation synthesis enables cross-conversation theme extraction
+- The full pipeline produces personalized responses using all 5 memory systems together
+
+**What needs improvement:**
+- Hallucination resistance varies between runs (LLM non-determinism)
+- Consolidation threshold sensitivity - too strict means no merges, too loose means over-merging
+- Procedural rules tend toward generic advice rather than domain-specific behavior
+- No retrieval gating (not every query needs all memory types)
+
+**Next steps:**
+1. Retrieval gating - route queries to relevant memory types only
+2. Conflict detection between semantic and episodic memory
+3. Larger benchmark (50+ questions) with statistical significance testing
+4. Human evaluation alongside automated keyword matching
+5. MCP server integration - expose memory systems as tools for external agents
