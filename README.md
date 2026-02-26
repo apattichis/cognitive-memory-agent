@@ -109,12 +109,8 @@ This prevents unbounded memory growth and improves retrieval quality over time.
 **What needs improvement:**
 - Hallucination resistance varies between runs (LLM non-determinism)
 - Consolidation threshold sensitivity - too strict means no merges, too loose means over-merging
-- Procedural rules tend toward generic advice rather than domain-specific behavior
-- No retrieval gating (not every query needs all memory types)
 
 **Next steps:**
-1. Retrieval gating - route queries to relevant memory types only
-2. Conflict detection between semantic and episodic memory
-3. Larger benchmark (50+ questions) with statistical significance testing
-4. Human evaluation alongside automated keyword matching
-5. MCP server integration - expose memory systems as tools for external agents
+- [ ] Retrieval gating - route queries to relevant memory types only
+- [ ] Conflict detection between semantic and episodic memory
+- [ ] MCP server integration - expose memory systems as tools for Claude
