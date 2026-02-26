@@ -2,24 +2,23 @@
 
 ## A. High-Level Flow
 
-User queries pass through all five memory systems before generating a response.
+User queries flow through the agent, which assembles context from all active memory systems into a single LLM call.
 
 ```mermaid
 flowchart LR
     User([User Query]) --> Agent
-
-    subgraph Agent[CognitiveAgent]
-        direction TB
-        WM[Working Memory<br/>Chat history buffer]
-        SM[Semantic Memory<br/>ChromaDB RAG]
-        EM[Episodic Memory<br/>Past conversations]
-        PM[Procedural Memory<br/>Learned rules]
-        CON[Consolidation<br/>Sleep phase]
-    end
-
     Agent --> Response([Response])
 
-    EM -.->|every N convs| CON
+    subgraph Agent[CognitiveAgent]
+        direction LR
+        SM[Semantic Memory] -->|RAG chunks| BUILD
+        EM[Episodic Memory] -->|past experiences| BUILD
+        PM[Procedural Memory] -->|learned rules| BUILD
+        BUILD[Build Prompt] --> WM[Working Memory<br/>+ Claude API]
+    end
+
+    WM -.->|new_conversation| EM
+    EM -.->|every 5 convs| CON[Consolidation]
     CON -.->|merge| EM
     CON -.->|promote| PM
 ```
@@ -32,22 +31,27 @@ Each `agent.chat()` call assembles context from multiple memory systems and send
 sequenceDiagram
     participant U as User
     participant A as Agent
-    participant WM as Working Memory
-    participant SM as Semantic Memory
     participant EM as Episodic Memory
     participant PM as Procedural Memory
+    participant SM as Semantic Memory
+    participant WM as Working Memory
     participant LLM as Claude API
 
     U->>A: chat(query)
-    A->>EM: recall_as_context(query)
-    EM-->>A: past experiences
-    A->>PM: get_rules_text()
-    PM-->>A: behavioral rules
-    A->>A: Build system prompt<br/>(base + episodic + procedural)
+
+    par Build system prompt
+        A->>EM: recall_as_context(query)
+        EM-->>A: past experiences
+        A->>PM: get_rules_text()
+        PM-->>A: behavioral rules
+    end
+    Note over A: System prompt =<br/>base + episodic + procedural
+
     A->>SM: recall_as_message(query)
-    SM-->>A: RAG chunks (extra message)
+    SM-->>A: RAG chunks as extra message
+
     A->>WM: add_user_message(query)
-    WM->>LLM: system prompt + history + RAG context
+    WM->>LLM: system prompt + chat history + RAG chunks
     LLM-->>WM: response
     WM-->>A: response text
     A-->>U: response
@@ -63,14 +67,14 @@ flowchart TD
     FETCH --> CLUSTER[Greedy clustering<br/>by cosine similarity]
     CLUSTER --> FILTER{Cluster size >= 2?}
 
-    FILTER -->|Yes| MERGE[LLM merges cluster<br/>into one episode]
+    FILTER -->|Yes| MERGE[LLM merges cluster<br/>into one unified episode]
     MERGE --> DELETE[Delete originals<br/>from ChromaDB]
     DELETE --> STORE[Store merged episode]
 
-    FILTER -->|No| KEEP[Keep as-is]
+    FILTER -->|No| SKIP[Keep as-is]
 
-    STORE --> PROMOTE[LLM extracts recurring<br/>patterns from all episodes]
-    KEEP --> PROMOTE
+    STORE --> PROMOTE
+    SKIP --> PROMOTE[LLM extracts recurring<br/>patterns from all episodes]
     PROMOTE --> RULES[Add new rules to<br/>procedural memory]
     RULES --> DONE([Consolidation complete])
 ```
@@ -87,34 +91,39 @@ flowchart TD
 | **Agent** | `agent.py` | Orchestrator - builds system prompt, routes queries | `mode="full"` or `"semantic_only"` |
 | **Config** | `config.py` | All constants and hyperparameters | - |
 
-## E. Memory Lifecycle
+## E. Conversation Lifecycle
+
+Shows what happens across a multi-conversation session.
 
 ```mermaid
-stateDiagram-v2
-    [*] --> PDF: data/ directory
-    PDF --> SemanticChunks: ingest (startup)
+flowchart LR
+    subgraph Conv1[Conversation 1]
+        Q1[User queries] --> R1[Agent responds]
+    end
 
-    [*] --> UserQuery: user sends message
-    UserQuery --> WorkingMemory: add to history
-    UserQuery --> SemanticRetrieval: vector search
-    SemanticRetrieval --> LLMCall: injected as extra message
-    WorkingMemory --> LLMCall: chat history
-    EpisodicContext --> SystemPrompt: past experiences
-    ProceduralRules --> SystemPrompt: learned rules
-    SystemPrompt --> LLMCall
-    LLMCall --> Response
+    subgraph Save1[new_conversation]
+        R1 --> REFL1[LLM reflects on conv]
+        REFL1 --> EP1[Store episode in ChromaDB]
+        EP1 --> PROC1[Update procedural rules]
+    end
 
-    Response --> WorkingMemory: stored in buffer
+    subgraph Conv2[Conversations 2-4]
+        Q2[More queries] --> R2[Responses use<br/>episodic + procedural context]
+    end
 
-    state "new_conversation()" as NC {
-        WorkingMemory --> EpisodicStore: LLM reflection
-        EpisodicStore --> ProceduralUpdate: incremental rules
-    }
+    Save1 --> Conv2
 
-    state "consolidation (every 5 convs)" as CON {
-        EpisodicStore --> Cluster: group by similarity
-        Cluster --> Merge: compress overlapping
-        Merge --> Promote: extract patterns
-        Promote --> ProceduralRules
-    }
+    subgraph Conv5[Conversation 5]
+        Q5[Queries] --> R5[Responses]
+    end
+
+    Conv2 --> Conv5
+
+    subgraph Sleep[Consolidation - sleep phase]
+        CLUST[Cluster similar episodes] --> MERG[Merge overlapping]
+        MERG --> PROM[Promote patterns to rules]
+    end
+
+    Conv5 -->|triggers| Sleep
+    Sleep --> NEXT([Continue with compressed memory])
 ```

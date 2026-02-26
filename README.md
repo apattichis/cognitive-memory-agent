@@ -2,7 +2,26 @@
 
 A cognitive architecture for LLM-based chatbots that goes beyond vanilla RAG. Built on Anthropic's Claude, the agent maintains five distinct memory systems - working, semantic, episodic, procedural, and consolidation - that mirror how human cognition stores, retrieves, and refines knowledge over time. Documents are ingested into a ChromaDB vector store for semantic retrieval, conversations are reflected on and stored as episodic memories with recency-weighted recall, and a periodic "sleep" phase clusters similar episodes, compresses them, and promotes recurring patterns into persistent behavioral rules.
 
-## Memory Systems
+## How It Works
+
+```mermaid
+flowchart LR
+    User([User Query]) --> Agent
+    Agent --> Response([Response])
+
+    subgraph Agent[CognitiveAgent]
+        direction LR
+        SM[Semantic Memory] -->|RAG chunks| BUILD
+        EM[Episodic Memory] -->|past experiences| BUILD
+        PM[Procedural Memory] -->|learned rules| BUILD
+        BUILD[Build Prompt] --> WM[Working Memory<br/>+ Claude API]
+    end
+
+    WM -.->|new_conversation| EM
+    EM -.->|every 5 convs| CON[Consolidation]
+    CON -.->|merge| EM
+    CON -.->|promote| PM
+```
 
 - **Working Memory** - Current conversation context (chat history buffer)
 - **Semantic Memory** - RAG over documents via ChromaDB with cosine similarity search
@@ -10,7 +29,7 @@ A cognitive architecture for LLM-based chatbots that goes beyond vanilla RAG. Bu
 - **Procedural Memory** - Self-updating behavioral rules that evolve incrementally with experience
 - **Consolidation** - Periodic "sleep" phase that clusters similar episodes, merges them, and promotes recurring patterns to procedural rules
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed diagrams of how the systems interact.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for per-query pipeline, consolidation flow, and conversation lifecycle diagrams.
 
 ## Setup
 
