@@ -6,18 +6,18 @@ User queries flow through the agent, which assembles context from all active mem
 
 ```mermaid
 flowchart LR
-    User([User Query]) --> WM
+    User([User Query]) --> Agent
 
     subgraph Agent[CognitiveAgent]
         direction TB
         WM[Working Memory<br/>Chat history buffer]
-        SM[Semantic Memory<br/>ChromaDB RAG]
-        EM[Episodic Memory<br/>Past conversations]
-        PM[Procedural Memory<br/>Learned rules]
+        SM[Semantic Memory<br/>ChromaDB RAG] --> WM
+        EM[Episodic Memory<br/>Past conversations] --> WM
+        PM[Procedural Memory<br/>Learned rules] --> WM
         CON[Consolidation<br/>Sleep phase]
     end
 
-    WM --> Response([Response])
+    Agent --> Response([Response])
 
     EM -.->|every N convs| CON
     CON -.->|merge| EM
