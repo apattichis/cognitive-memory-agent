@@ -1,6 +1,6 @@
 # Cognitive Memory Agent
 
-A cognitive architecture for LLM-based chatbots that goes beyond vanilla RAG. Built on Anthropic's Claude, the agent maintains five distinct memory systems - working, semantic, episodic, procedural, and consolidation - that mirror how human cognition stores, retrieves, and refines knowledge over time. The result is an agent that remembers past conversations, learns from experience, and produces personalized responses tailored to each user's context, preferences, and history.
+A cognitive architecture for LLM-based chatbots that goes beyond vanilla RAG. Built on Anthropic's Claude, the agent maintains four memory systems and a consolidation process, inspired by how human cognition stores, retrieves, and refines knowledge over time. The result is an agent that remembers past conversations, learns from experience, and produces personalized responses tailored to each user's context, preferences, and history.
 
 Documents are ingested into a ChromaDB vector store for semantic retrieval, conversations are reflected on and stored as episodic memories with recency-weighted recall, and a periodic "sleep" phase clusters similar episodes, compresses them, and promotes recurring patterns into persistent behavioral rules.
 
@@ -8,26 +8,25 @@ Documents are ingested into a ChromaDB vector store for semantic retrieval, conv
 
 ```mermaid
 flowchart LR
-    A([User Query]) --> B[<b>CognitiveAgent</b><br/><br/>Working Memory<br/>Semantic Memory<br/>Episodic Memory<br/>Procedural Memory<br/>Consolidation] --> C([Response])
+    A([User Query]) --> B[<b>CognitiveAgent</b><br/><br/>Working Memory<br/>Semantic Memory<br/>Episodic Memory<br/>Procedural Memory<br/><i>+ Consolidation process</i>] --> C([Response])
 ```
 
 - **Working Memory** - Current conversation context (chat history buffer)
-- **Semantic Memory** - RAG over documents via ChromaDB with cosine similarity search
+- **Semantic Memory** - Factual knowledge from documents via ChromaDB with cosine similarity search
 - **Episodic Memory** - Past conversation storage with LLM-generated reflections and recency-weighted retrieval
-- **Procedural Memory** - Self-updating behavioral rules that evolve incrementally with experience
-- **Consolidation** - Periodic "sleep" phase that clusters similar episodes, merges them, and promotes recurring patterns to procedural rules
+- **Procedural Memory** - Learned behavioral rules that evolve incrementally with experience. In cognitive science, procedural memory refers to implicit skills (e.g., riding a bike); here we use the term as it appears in the AI agent literature to mean explicit behavioral heuristics.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed diagrams of how the systems interact.
 
-## How Consolidation Works
+### Consolidation Process
 
-Every N conversations (configurable), the agent runs a "sleep" cycle:
+Consolidation is a **process** that operates on the memory systems above, not a memory system itself. Every N conversations (configurable), it runs a periodic cycle:
 
 1. **Cluster** - Groups episodic memories by embedding cosine similarity
 2. **Merge** - LLM synthesizes each cluster into one unified memory, deletes originals
-3. **Promote** - Extracts recurring patterns across episodes and adds them as procedural rules
+3. **Promote** - Extracts recurring behavioral patterns across episodes and adds them as procedural rules
 
-This prevents unbounded memory growth and improves retrieval quality over time.
+This covers episode compression and behavioral generalization. It does not perform episodic-to-semantic fact transfer (a separate aspect of consolidation in neuroscience). User-specific facts mentioned in conversation remain in episodic memory and are retrieved via similarity search.
 
 ## Results
 
@@ -38,7 +37,7 @@ Four focused notebooks benchmark each memory system individually and together:
 | [`01_semantic.ipynb`](notebooks/01_semantic.ipynb) | RAG retrieval over the Zeltron PDF - 12 questions at 3 difficulty levels |
 | [`02_episodic.ipynb`](notebooks/02_episodic.ipynb) | Conversation memory, recall, retrieval gating, and recency weighting |
 | [`03_consolidation.ipynb`](notebooks/03_consolidation.ipynb) | Sleep phase merging, procedural rule promotion, detail preservation |
-| [`04_full_pipeline.ipynb`](notebooks/04_full_pipeline.ipynb) | End-to-end benchmark: full agent vs vanilla RAG across all systems |
+| [`04_full_pipeline.ipynb`](notebooks/04_full_pipeline.ipynb) | End-to-end benchmark: full agent vs vanilla RAG across all memory systems |
 
 The baseline can be instantiated with `CognitiveAgent(mode="semantic_only")` - it uses only working + semantic memory, providing a vanilla RAG reference point.
 
@@ -116,7 +115,7 @@ Agent: The QA-7 operates at exactly 22.4 degrees Celsius...
 
 ### Smoke Test (`scripts/test_smoke.py`)
 
-Quick end-to-end test that exercises all 5 memory systems in sequence.
+Quick end-to-end test that exercises all memory systems and the consolidation process in sequence.
 
 ```bash
 python scripts/test_smoke.py
@@ -138,7 +137,7 @@ notebooks/
   01_semantic.ipynb       # Semantic retrieval benchmark
   02_episodic.ipynb       # Episodic memory benchmark
   03_consolidation.ipynb  # Consolidation & procedural memory benchmark
-  04_full_pipeline.ipynb  # Full pipeline benchmark (all 5 systems)
+  04_full_pipeline.ipynb  # Full pipeline benchmark (all memory systems)
 scripts/
   generate_pdf.py         # Generates the synthetic Zeltron Corporation PDF
   test_smoke.py           # End-to-end smoke test

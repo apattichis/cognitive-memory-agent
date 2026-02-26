@@ -6,7 +6,7 @@ User queries flow through the agent, which assembles context from all active mem
 
 ```mermaid
 flowchart LR
-    A([User Query]) --> B[<b>CognitiveAgent</b><br/><br/>Working Memory<br/>Semantic Memory<br/>Episodic Memory<br/>Procedural Memory<br/>Consolidation] --> C([Response])
+    A([User Query]) --> B[<b>CognitiveAgent</b><br/><br/>Working Memory<br/>Semantic Memory<br/>Episodic Memory<br/>Procedural Memory<br/><i>+ Consolidation process</i>] --> C([Response])
 ```
 
 ## B. Per-Query Pipeline
@@ -53,9 +53,9 @@ flowchart LR
     CD -->|none| SKIP[No change]
 ```
 
-## C. Consolidation Pipeline
+## C. Consolidation Process
 
-Triggered every N conversations during `new_conversation()`. Compresses episodic memory and extracts behavioral patterns.
+A periodic process (not a memory system) triggered every N conversations during `new_conversation()`. Compresses episodic memory and extracts behavioral patterns into procedural rules. This covers episode compression and behavioral generalization - not episodic-to-semantic fact transfer.
 
 ```mermaid
 flowchart TD
@@ -82,7 +82,7 @@ flowchart TD
 | **Working Memory** | `memory/working.py` | Chat history buffer, Anthropic API calls | `MODEL_NAME`, `MAX_TOKENS`, `TEMPERATURE` |
 | **Semantic Memory** | `memory/semantic.py` | PDF ingestion, text chunking, ChromaDB vector search | `CHUNK_SIZE=800`, `CHUNK_OVERLAP=100`, `SEMANTIC_TOP_K=10` |
 | **Episodic Memory** | `memory/episodic.py` | LLM reflection on conversations, recency-weighted recall | `EPISODIC_TOP_K=3`, `RECENCY_HALF_LIFE_HOURS=72` |
-| **Procedural Memory** | `memory/procedural.py` | Incremental rule updates via LLM synthesis, persisted to JSON | `MAX_PROCEDURAL_RULES=15` |
+| **Procedural Memory** | `memory/procedural.py` | Explicit behavioral heuristics (AI agent usage of the term, not implicit skills) via LLM synthesis, persisted to JSON | `MAX_PROCEDURAL_RULES=15` |
 | **Consolidation** | `memory/consolidation.py` | Clustering, merging, and pattern promotion | `CONSOLIDATION_THRESHOLD=0.70`, `CONSOLIDATION_EVERY_N=5`, `PROMOTION_MIN_OCCURRENCES=3` |
 | **Agent** | `agent.py` | Orchestrator - retrieval gating, conflict detection, system prompt assembly | `mode="full"` or `"semantic_only"`, `CONFLICT_DETECTION_ENABLED=True` |
 | **Config** | `config.py` | All constants and hyperparameters | - |
