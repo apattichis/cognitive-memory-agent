@@ -6,22 +6,7 @@ User queries flow through the agent, which assembles context from all active mem
 
 ```mermaid
 flowchart LR
-    User([User Query]) --> Agent
-
-    subgraph Agent[CognitiveAgent]
-        direction TB
-        WM[Working Memory<br/>Chat history buffer]
-        SM[Semantic Memory<br/>ChromaDB RAG] --> WM
-        EM[Episodic Memory<br/>Past conversations] --> WM
-        PM[Procedural Memory<br/>Learned rules] --> WM
-        CON[Consolidation<br/>Sleep phase]
-    end
-
-    Agent --> Response([Response])
-
-    EM -.->|every N convs| CON
-    CON -.->|merge| EM
-    CON -.->|promote| PM
+    A([User Query]) --> B[<b>CognitiveAgent</b><br/><br/>Working Memory<br/>Semantic Memory<br/>Episodic Memory<br/>Procedural Memory<br/>Consolidation] --> C([Response])
 ```
 
 ## B. Per-Query Pipeline
@@ -31,18 +16,15 @@ Each `agent.chat()` call assembles context from multiple memory systems and send
 ```mermaid
 flowchart TD
     Q([User sends query]) --> EP[Episodic Memory<br/>recall past experiences]
-    Q --> PR[Procedural Memory<br/>load learned rules]
-
-    EP --> SYS[Build system prompt<br/>base + episodic + procedural]
-    PR --> SYS
-
     Q --> SEM[Semantic Memory<br/>retrieve RAG chunks]
 
-    SYS --> LLM[Claude API call<br/>system prompt + chat history + RAG chunks]
-    SEM --> LLM
-    Q -->|add to chat history| LLM
+    EP --> SYS[Build system prompt<br/>base + episodic recall + procedural rules]
 
-    LLM --> R([Return response])
+    SYS --> WM[Working Memory<br/>chat history + Claude API call]
+    Q --> WM
+    SEM --> WM
+
+    WM --> R([Response])
 ```
 
 ## C. Consolidation Pipeline

@@ -6,22 +6,7 @@ A cognitive architecture for LLM-based chatbots that goes beyond vanilla RAG. Bu
 
 ```mermaid
 flowchart LR
-    User([User Query]) --> Agent
-
-    subgraph Agent[CognitiveAgent]
-        direction TB
-        WM[Working Memory<br/>Chat history buffer]
-        SM[Semantic Memory<br/>ChromaDB RAG] --> WM
-        EM[Episodic Memory<br/>Past conversations] --> WM
-        PM[Procedural Memory<br/>Learned rules] --> WM
-        CON[Consolidation<br/>Sleep phase]
-    end
-
-    Agent --> Response([Response])
-
-    EM -.->|every N convs| CON
-    CON -.->|merge| EM
-    CON -.->|promote| PM
+    A([User Query]) --> B[<b>CognitiveAgent</b><br/><br/>Working Memory<br/>Semantic Memory<br/>Episodic Memory<br/>Procedural Memory<br/>Consolidation] --> C([Response])
 ```
 
 - **Working Memory** - Current conversation context (chat history buffer)
