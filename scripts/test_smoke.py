@@ -1,16 +1,20 @@
-"""Full end-to-end demo exercising all 5 memory systems.
+"""Smoke test exercising all 5 memory systems.
 
 Run with:
     conda activate cognitive-memory
-    export ANTHROPIC_API_KEY="your-key"
-    cd ~/VSCode/Projects/cognitive-memory-agent
-    python test_full_demo.py
+    cd cognitive-memory-agent
+    python scripts/test_smoke.py
 """
 
 import json
 import os
+import sys
 import shutil
 
+from dotenv import load_dotenv
+load_dotenv()
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from agent import CognitiveAgent
 
 

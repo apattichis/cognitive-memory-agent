@@ -9,24 +9,40 @@ from memory.consolidation import Consolidation
 
 
 class CognitiveAgent:
-    """Agent with cognitive memory capabilities."""
+    """Agent with cognitive memory capabilities.
 
-    def __init__(self):
+    Args:
+        mode: "full" uses all 5 memory systems.
+              "semantic_only" uses only working + semantic memory (vanilla RAG baseline).
+    """
+
+    def __init__(self, mode: str = "full"):
+        self.mode = mode
         self.working = WorkingMemory()
         self.semantic = SemanticMemory()
-        self.episodic = EpisodicMemory()
-        self.procedural = ProceduralMemory()
-        self.consolidation = Consolidation(self.episodic, self.procedural)
+
+        if mode == "full":
+            self.episodic = EpisodicMemory()
+            self.procedural = ProceduralMemory()
+            self.consolidation = Consolidation(self.episodic, self.procedural)
+        else:
+            self.episodic = None
+            self.procedural = None
+            self.consolidation = None
+
         self.conversation_count = 0
 
         # Ingest any documents in data/
-        print("Loading semantic memory...")
+        print(f"Loading semantic memory (mode={mode})...")
         self.semantic.ingest_all()
 
     def _build_system_prompt(self, user_input: str) -> str:
         """Construct system prompt with episodic + procedural context."""
         base = self.working._default_prompt()
         parts = [base]
+
+        if self.mode != "full":
+            return "\n\n".join(parts)
 
         # Episodic context
         episodic_context = self.episodic.recall_as_context(user_input)
@@ -69,7 +85,7 @@ class CognitiveAgent:
 
     def new_conversation(self):
         """Start a fresh conversation (preserves long-term memory)."""
-        if self.working.get_turn_count() > 0:
+        if self.mode == "full" and self.working.get_turn_count() > 0:
             conversation_text = self.working.get_conversation_text()
 
             # Store episodic memory
@@ -85,7 +101,7 @@ class CognitiveAgent:
         self.conversation_count += 1
 
         # Trigger consolidation every N conversations
-        if self.conversation_count % config.CONSOLIDATION_EVERY_N == 0:
+        if self.mode == "full" and self.conversation_count % config.CONSOLIDATION_EVERY_N == 0:
             print("  Running memory consolidation (sleep phase)...")
             self.consolidation.run()
 

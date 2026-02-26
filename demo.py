@@ -1,5 +1,8 @@
 """CLI chat interface for the cognitive memory agent."""
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from agent import CognitiveAgent
 
 
